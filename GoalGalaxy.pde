@@ -1,4 +1,9 @@
 Table matches;
+
+int totalGoals = 0;
+int totalMatches = 0;
+int homeWins = 0;
+
 int getTotalGoals(int homeGoals, int awayGoals) {
   return homeGoals + awayGoals;
 }
@@ -46,6 +51,13 @@ void draw() {
 
     int homeGoals = match.getInt("FTHG");
     int awayGoals = match.getInt("FTAG");
+    
+    totalGoals += getTotalGoals(homeGoals, awayGoals);
+totalMatches++;
+
+if (homeGoals > awayGoals) {
+  homeWins++;
+}
 
     float x = 45 + (displayed % 20) * 42;
     float y = 115 + (displayed / 20) * 42;
@@ -91,4 +103,14 @@ fill(255, 205, 65);
 ellipse(480, 565, 13, 13);
 fill(255);
 text("Draw", 495, 570);
+// Football statistics
+textAlign(CENTER);
+textSize(16);
+fill(255);
+
+text("Season: 2024-2025", width / 2, 485);
+text("Matches counted: " + totalMatches, width / 2, 510);
+text("Total goals: " + totalGoals, width / 2, 535);
+text("Average goals per match: " + nf((float) totalGoals / totalMatches, 0, 2), width / 2, 555);
+text("Home wins: " + homeWins, width / 2, 580);
 }
