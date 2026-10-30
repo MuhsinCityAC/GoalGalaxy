@@ -9,31 +9,39 @@ int draws = 0;
 
 int totalHomeGoals = 0;
 int totalAwayGoals = 0;
+int invalidRows = 0;
 
 // Calculate the total goals in a match
-int getTotalGoals(int homeGoals, int awayGoals) {
-  return homeGoals + awayGoals;
-}
+int getTotalGoals(int homeGoals, int awayGoals) 
+  {return homeGoals + awayGoals;}
 
-void setup() {
-  size(1300, 1200);
+void setup() 
+  {size(1300, 1200);
 
   matches = loadTable("E0.csv", "header");
 
   if (matches == null) {
-    println("Could not load E0.csv. Check the data folder.");
+    println("ERROR: Could not load E0.csv.");
+    println("Check that E0.csv is inside the data folder.");
     exit();
-  }
+    return;}
 
-  println("Matches loaded: " + matches.getRowCount());
+  println("CSV rows loaded: " + matches.getRowCount());
 
-  noLoop();
-}
+  // Check required columns
+  if (matches.getColumnIndex("FTHG") == -1 ||
+      matches.getColumnIndex("FTAG") == -1 ||
+      matches.getColumnIndex("Date") == -1) {
+    println("ERROR: Required CSV columns are missing.");
+    exit();
+    return;}
 
-void draw() {
-  background(12, 18, 40);
+  noLoop();}
 
-  // Reset statistics before processing the CSV
+void draw() 
+  {background(12, 18, 40);
+
+  // Reset statistics
   totalGoals = 0;
   totalMatches = 0;
   homeWins = 0;
@@ -41,153 +49,169 @@ void draw() {
   draws = 0;
   totalHomeGoals = 0;
   totalAwayGoals = 0;
+  invalidRows = 0;
 
-  // Main title
+  // Title
   fill(255);
   textAlign(CENTER);
-  textSize(28);
-  text("THE GOAL GALAXY", width / 2, 40);
+  textSize(30);
+  text("THE GOAL GALAXY", width / 2, 45);
 
-  textSize(14);
+  textSize(15);
   fill(190);
-  text("Real Premier League match results, 2024-2025",
-       width / 2, 65);
+  text("Premier League | 2024-2025",
+       width / 2, 72);
 
   // Statistics panel
   noStroke();
   fill(20, 30, 60);
-  rect(20, 115, 860, 90, 12);
+  rect(25, 105, 1250, 130, 12);
 
-  // Process the CSV data
-  int total = matches.getRowCount();
+  int totalRows = matches.getRowCount();
   int displayed = 0;
 
-  for (int i = 0; i < total; i++) {
-    TableRow match = matches.getRow(i);
+  // Process the football data
+  for (int i = 0; i < totalRows; i++) 
+
+    {TableRow match = matches.getRow(i);
 
     String homeText = match.getString("FTHG");
     String awayText = match.getString("FTAG");
 
-    // Skip rows with missing goal data
+    // Validate both score fields
     if (homeText == null || awayText == null ||
         homeText.trim().length() == 0 ||
-        awayText.trim().length() == 0) {
-      continue;
-    }
+        awayText.trim().length() == 0) 
 
-    int homeGoals = match.getInt("FTHG");
-    int awayGoals = match.getInt("FTAG");
+     { invalidRows++;
+      continue;}
 
-    // Calculate match statistics
+    int homeGoals;
+    int awayGoals;
+
+    try 
+      {homeGoals = Integer.parseInt(homeText.trim());
+      awayGoals = Integer.parseInt(awayText.trim());}
+   
+    catch (Exception e) 
+      {invalidRows++;
+      continue;}
+
+    // Reject impossible negative scores
+    if (homeGoals < 0 || awayGoals < 0) 
+      {invalidRows++;
+      continue;}
+
+    // Calculate statistics
     totalGoals += getTotalGoals(homeGoals, awayGoals);
     totalMatches++;
 
     totalHomeGoals += homeGoals;
     totalAwayGoals += awayGoals;
 
-    if (homeGoals > awayGoals) {
-      homeWins++;
-    } else if (awayGoals > homeGoals) {
-      awayWins++;
-    } else {
-      draws++;
-    }
+    if (homeGoals > awayGoals) 
+      {homeWins++;}
+    else if (awayGoals > homeGoals) 
+      {awayWins++;}
+    else 
+      {draws++;}
 
-    // Position the match circles
-    float x = 60 + (displayed % 20) * 61;
-    float y = 300 + (displayed / 20) * 25;
+    // Arrange circles in a grid
+    float x = 45 + (displayed % 20) * 63;
+    float y = 285 + (displayed / 20) * 26;
 
-    // Larger circles represent more goals
+    // More goals = larger circle
     float circleSize =
       8 + getTotalGoals(homeGoals, awayGoals) * 2;
 
-    // Blue = home win
-    // Red = away win
-    // Yellow = draw
-    if (homeGoals > awayGoals) {
-      fill(50, 140, 255);
-    } else if (awayGoals > homeGoals) {
-      fill(255, 75, 90);
-    } else {
-      fill(255, 205, 65);
-    }
+    // Blue = home win, red = away win, yellow = draw
+    if (homeGoals > awayGoals) 
+      {fill(50, 140, 255);}
+    else if (awayGoals > homeGoals) 
+      {fill(255, 75, 90);}
+    else 
+      {fill(255, 205, 65);}
 
     noStroke();
     ellipse(x, y, circleSize, circleSize);
 
-    displayed++;
-  }
+    displayed++;}
 
-  // Statistics panel text
+  // Calculate average goals
+  float averageGoals = 0;
+
+  if (totalMatches > 0) 
+    {averageGoals = (float) totalGoals / totalMatches;}
+
+  // Display statistics
   fill(255);
   textAlign(CENTER);
   textSize(16);
 
   text("Season: 2024-2025", 650, 135);
-  text("Matches: " + totalMatches, 230, 170);
-  text("Total goals: " + totalGoals, 420, 170);
 
-  if (totalMatches > 0) {
-    float averageGoals =
-      (float) totalGoals / totalMatches;
+  text("Matches: " + totalMatches,
+       200, 170);
 
-    text("Average goals: " +
-         nf(averageGoals, 0, 2), 650, 170);
-  } else {
-    text("Average goals: 0.00", 650, 170);
-  }
+  text("Total goals: " + totalGoals,
+       440, 170);
 
-  text("Home wins: " + homeWins, 650, 195);
+  text("Average goals: " + nf(averageGoals, 0, 2),
+       700, 170);
 
-  // Match count
-  fill(255);
+  text("Home wins: " + homeWins,
+       200, 205);
+
+  text("Away wins: " + awayWins,
+       440, 205);
+
+  text("Draws: " + draws,
+       700, 205);
+
+  // Visualisation information
+  fill(200);
   textAlign(LEFT);
   textSize(14);
+
   text("Matches visualised: " + displayed,
-       30, height - 20);
+       30, 795);
 
-  // LEGEND
-  textSize(14);
-  textAlign(LEFT);
+  // Legend
+  textSize(15);
 
-  // Home win
   fill(50, 140, 255);
-  ellipse(220, 800, 13, 13);
+  ellipse(220, 825, 14, 14);
   fill(255);
-  text("Home win", 235, 805);
+  text("Home win", 235, 830);
 
-  // Away win
   fill(255, 75, 90);
-  ellipse(350, 800, 13, 13);
+  ellipse(365, 825, 14, 14);
   fill(255);
-  text("Away win", 365, 805);
+  text("Away win", 380, 830);
 
-  // Draw
   fill(255, 205, 65);
-  ellipse(480, 800, 13, 13);
+  ellipse(510, 825, 14, 14);
   fill(255);
-  text("Draw", 495, 805);
+  text("Draw", 525, 830);
 
-  // HOME GOALS VS AWAY GOALS CHART
+  // Home goals versus away goals chart
   float chartX = 100;
-  float chartY = 900;
+  float chartY = 925;
   float chartWidth = 500;
-  float barHeight = 25;
+  float barHeight = 28;
 
-  int maxGoals =
-    max(totalHomeGoals, totalAwayGoals);
+  int maxGoals = max(totalHomeGoals, totalAwayGoals);
+
+  fill(255);
+  textAlign(CENTER);
+  textSize(20);
+
+  text("HOME GOALS VS AWAY GOALS",
+       chartX + chartWidth / 2, 885);
 
   if (maxGoals > 0) {
 
-    // Chart title
-    fill(255);
-    textAlign(CENTER);
-    textSize(18);
-
-    text("HOME GOALS VS AWAY GOALS",
-         chartX + chartWidth / 2, 860);
-
-    // Home goals label
+    // Home goals
     fill(255);
     textAlign(LEFT);
     textSize(16);
@@ -195,25 +219,58 @@ void draw() {
     text("Home goals: " + totalHomeGoals,
          chartX, chartY);
 
-    // Home goals bar
     fill(50, 140, 255);
 
     rect(chartX, chartY + 10,
          chartWidth * totalHomeGoals / maxGoals,
          barHeight);
 
-    // Away goals label
+    // Away goals
     fill(255);
 
     text("Away goals: " + totalAwayGoals,
-         chartX, chartY + 60);
+         chartX, chartY + 65);
 
-    // Away goals bar
     fill(255, 75, 90);
 
-    rect(chartX, chartY + 70,
+    rect(chartX, chartY + 75,
          chartWidth * totalAwayGoals / maxGoals,
-         barHeight);
+         barHeight);}
+
+  // Data validation report
+  fill(180);
+  textSize(13);
+  textAlign(LEFT);
+
+  text("CSV rows: " + totalRows,
+       750, 955);
+
+  text("Valid matches: " + totalMatches,
+       750, 980);
+
+  text("Invalid or incomplete rows: " + invalidRows,
+       750, 1005);
+
+  // Source credit
+  text("Data source: Football-Data.co.uk",
+       30, 1155);
+
+  // Check the results
+  println("----- GOAL GALAXY DATA REPORT -----");
+  println("CSV rows: " + totalRows);
+  println("Valid matches: " + totalMatches);
+  println("Invalid rows: " + invalidRows);
+  println("Total goals: " + totalGoals);
+  println("Home wins: " + homeWins);
+  println("Away wins: " + awayWins);
+  println("Draws: " + draws);
+  println("Average goals: " + nf(averageGoals, 0, 2));
+
+  println("Outcome total: " +
+          (homeWins + awayWins + draws));
+
+  if (homeWins + awayWins + draws == totalMatches) 
+    {println("PASS: Match outcomes add up correctly.");}
+  else 
+    {println("WARNING: Match outcome totals do not match.");}
   }
-}
-```
