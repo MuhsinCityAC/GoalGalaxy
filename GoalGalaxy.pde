@@ -24,14 +24,11 @@ int invalidRows = 0;
 int undatedMatches = 0;
 int maxGoalsInMatch = 0;
 
-
-// ==========================================
 // FOOTBALL MATCH CLASS
-// ==========================================
 
-class FootballMatch {
+class FootballMatch 
 
-  String dateText;
+  {String dateText;
   Date matchDate;
 
   int homeGoals;
@@ -39,58 +36,54 @@ class FootballMatch {
   int totalMatchGoals;
 
   FootballMatch(String dateText, Date matchDate,
-                int homeGoals, int awayGoals) {
+                int homeGoals, int awayGoals) 
 
-    this.dateText = dateText;
+    {this.dateText = dateText;
     this.matchDate = matchDate;
 
     this.homeGoals = homeGoals;
     this.awayGoals = awayGoals;
 
     this.totalMatchGoals =
-      getTotalGoals(homeGoals, awayGoals);
-  }
+      getTotalGoals(homeGoals, awayGoals); }
 
   // Return the result of the match.
-  String getResult() {
+  String getResult() 
 
-    if (homeGoals > awayGoals) {
-      return "Home Win";
-    } else if (awayGoals > homeGoals) {
-      return "Away Win";
-    } else {
-      return "Draw";
+    {if (homeGoals > awayGoals) 
+      {return "Home Win";}
+     else if (awayGoals > homeGoals) 
+      {return "Away Win";}
+     else 
+      {return "Draw";}
     }
-  }
+  
 
   // Return the total number of goals.
-  int getGoals() {
-    return totalMatchGoals;
+  int getGoals() 
+    {return totalMatchGoals;}
   }
-}
 
 // CALCULATE TOTAL GOALS
 
-int getTotalGoals(int homeGoals, int awayGoals) {
-  return homeGoals + awayGoals;
-}
+int getTotalGoals(int homeGoals, int awayGoals) 
+  {return homeGoals + awayGoals;}
 
 // SETUP
 
-void setup() {
+void setup() 
 
-  size(1300, 1200);
+  {size(1300, 1200);
 
   matches = loadTable("E0.csv", "header");
 
-  if (matches == null) {
+  if (matches == null) 
 
-    println("ERROR: Could not load E0.csv.");
+    {println("ERROR: Could not load E0.csv.");
     println("Check that E0.csv is inside the data folder.");
 
     exit();
-    return;
-  }
+    return;}
 
   println("CSV rows loaded: " + matches.getRowCount());
 
@@ -103,8 +96,7 @@ void setup() {
     println("ERROR: Required CSV columns are missing.");
 
     exit();
-    return;
-  }
+    return;}
 
   // Read and process the dataset.
 
@@ -116,8 +108,7 @@ void setup() {
 
   // Draw the visualisation once.
 
-  noLoop();
-}
+  noLoop();}
 
 
 // ==========================================
@@ -128,9 +119,9 @@ void loadFootballData() {
 
   int totalRows = matches.getRowCount();
 
-  for (int i = 0; i < totalRows; i++) {
+  for (int i = 0; i < totalRows; i++) 
 
-    TableRow row = matches.getRow(i);
+    {TableRow row = matches.getRow(i);
 
     String homeText = row.getString("FTHG");
     String awayText = row.getString("FTAG");
@@ -144,40 +135,39 @@ void loadFootballData() {
         awayText.trim().length() == 0) {
 
       invalidRows++;
-      continue;
-    }
+      continue;}
 
     int homeGoals;
     int awayGoals;
 
     // Convert scores into integers.
 
-    try {
+    try 
 
-      homeGoals = Integer.parseInt(homeText.trim());
-      awayGoals = Integer.parseInt(awayText.trim());
+      {homeGoals = Integer.parseInt(homeText.trim());
+      awayGoals = Integer.parseInt(awayText.trim());}
 
-    } catch (Exception e) {
+     catch (Exception e) 
 
-      invalidRows++;
-      continue;
-    }
+      {invalidRows++;
+      continue;}
+    
 
     // Reject negative scores.
 
-    if (homeGoals < 0 || awayGoals < 0) {
+    if (homeGoals < 0 || awayGoals < 0) 
 
-      invalidRows++;
-      continue;
-    }
+      {invalidRows++;
+      continue;}
+    
 
     // Parse the match date.
 
     Date matchDate = MatchDate(dateText);
 
-    if (matchDate == null) {
-      undatedMatches++;
-    }
+    if (matchDate == null) 
+      {undatedMatches++;}
+    
 
     // Create a FootballMatch object.
 
@@ -186,8 +176,8 @@ void loadFootballData() {
         dateText,
         matchDate,
         homeGoals,
-        awayGoals
-      );
+        awayGoals);
+      
 
     footballMatches.add(footballMatch);
 
@@ -206,50 +196,49 @@ void loadFootballData() {
 
     if (homeGoals > awayGoals) {
 
-      homeWins++;
+      homeWins++;}
 
-    } else if (awayGoals > homeGoals) {
+     else if (awayGoals > homeGoals) 
 
-      awayWins++;
+      {awayWins++;}
 
-    } else {
+     else 
 
-      draws++;
+      {draws++;}
     }
   }
-}
 // DIFFERENT DATE FORMATS
 
 Date MatchDate(String dateText) {
 
   if (dateText == null ||
-      dateText.trim().length() == 0) {
+      dateText.trim().length() == 0) 
 
-    return null;
-  }
+    {return null;}
+  
 
   String[] formats = {
     "dd/MM/yyyy",
     "dd/MM/yy",
     "yyyy-MM-dd",
     "dd-MM-yyyy",
-    "dd-MM-yy"
-  };
+    "dd-MM-yy"  };
 
-  for (int i = 0; i < formats.length; i++) {
 
-    try {
+  for (int i = 0; i < formats.length; i++) 
 
-      SimpleDateFormat formatter =
+    {try 
+
+      {SimpleDateFormat formatter =
         new SimpleDateFormat(formats[i], Locale.UK);
 
       formatter.setLenient(false);
 
-      return formatter.parse(dateText.trim());
+      return formatter.parse(dateText.trim());}
 
-    } catch (Exception e) {
+     catch (Exception e) {
 
-      // Try the next date format.
+// Try the next date format.
     }
   }
 
